@@ -1,775 +1,116 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>IshySpeak</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>IshySpeak</title>
 
-  <meta name="theme-color" content="#111827" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<style>
+body{
+font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto;
+margin:0;
+background:#0b1020;
+color:white;
+}
 
-  <style>
-    :root{
-      --bg:#0b1020; --card:#111827; --muted:#94a3b8; --text:#e5e7eb;
-      --line:rgba(148,163,184,.25); --good:#34d399; --warn:#fbbf24; --bad:#fb7185;
-      --btn:#2563eb; --btn2:#0f172a;
-    }
-    *{box-sizing:border-box}
-    body{
-      margin:0;
-      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,Helvetica,Arial,sans-serif;
-      background:linear-gradient(180deg,#050814 0%, #0b1020 30%, #0b1020 100%);
-      color:var(--text);
-      -webkit-tap-highlight-color: transparent;
-      touch-action: manipulation;
-    }
-    header{padding:22px 16px 8px; text-align:center}
-    header h1{margin:0; font-size:34px; letter-spacing:.2px}
-    header .sub{margin-top:6px; color:var(--muted)}
-    .wrap{max-width:980px; margin:0 auto; padding:12px 12px 40px}
-    .grid{display:grid; grid-template-columns:1fr; gap:12px}
-    @media(min-width:900px){.grid{grid-template-columns:1.1fr .9fr}}
-    .card{
-      background:rgba(17,24,39,.75);
-      border:1px solid rgba(148,163,184,.15);
-      border-radius:18px;
-      padding:16px;
-      backdrop-filter: blur(10px);
-    }
-    .card h2{margin:0 0 10px; font-size:22px}
-    .muted{color:var(--muted)}
-    .row{display:flex; gap:10px; flex-wrap:wrap; align-items:center}
-    .btn{
-      border:none; border-radius:12px; padding:12px 14px;
-      background:var(--btn); color:white; font-weight:600; cursor:pointer;
-    }
-    .btn.secondary{background:var(--btn2); border:1px solid rgba(148,163,184,.25)}
-    .btn.ghost{background:transparent; border:1px solid rgba(148,163,184,.25); color:var(--text)}
-    .btn:disabled{opacity:.5; cursor:not-allowed}
-    .list{margin:0; padding:0; list-style:none}
-    .item{
-      padding:12px 12px;
-      border-top:1px solid var(--line);
-      display:flex; justify-content:space-between; align-items:center; gap:10px;
-      cursor:pointer;
-      pointer-events:auto;
-    }
-    .item:first-child{border-top:none}
-    .badge{
-      font-size:12px; padding:4px 8px; border-radius:999px;
-      border:1px solid rgba(148,163,184,.35); color:var(--muted);
-      white-space:nowrap;
-    }
-    .badge.good{border-color:rgba(52,211,153,.5); color:var(--good)}
-    .badge.warn{border-color:rgba(251,191,36,.5); color:var(--warn)}
-    .badge.bad{border-color:rgba(251,113,133,.5); color:var(--bad)}
-    .kpi{display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:10px}
-    .kpi .box{padding:10px 12px; border-radius:14px; border:1px solid rgba(148,163,184,.15); background:rgba(15,23,42,.45)}
-    .kpi .box .n{font-size:18px; font-weight:800}
-    .kpi .box .l{font-size:12px; color:var(--muted); margin-top:4px}
-    .tabs{display:flex; gap:8px; margin:6px 0 12px; flex-wrap:wrap}
-    .tab{
-      padding:8px 10px;
-      border-radius:999px;
-      border:1px solid rgba(148,163,184,.25);
-      cursor:pointer;
-      color:var(--muted);
-      pointer-events:auto;
-    }
-    .tab.active{color:var(--text); border-color:rgba(96,165,250,.55); background:rgba(37,99,235,.18)}
-    .panel{display:none}
-    .panel.active{display:block}
-    textarea,input{
-      width:100%; padding:12px 12px; border-radius:12px;
-      border:1px solid rgba(148,163,184,.25); background:rgba(15,23,42,.55);
-      color:var(--text); outline:none;
-    }
-    textarea{min-height:92px; resize:vertical}
-    .steps{margin:10px 0 0; padding-left:18px; color:var(--text)}
-    .steps li{margin:6px 0}
-    .prompt{
-      border:1px solid rgba(148,163,184,.18); background:rgba(2,6,23,.35);
-      padding:10px 12px; border-radius:14px; margin:10px 0;
-    }
-    .mini{font-size:12px; color:var(--muted)}
-    .divider{height:1px; background:var(--line); margin:12px 0}
-    .audioRow{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
-    .pill{padding:6px 10px; border-radius:999px; border:1px solid rgba(148,163,184,.25); color:var(--muted); font-size:12px}
-    audio{width:100%}
-  </style>
+header{
+padding:20px;
+text-align:center;
+font-size:30px;
+font-weight:bold;
+}
+
+.container{
+padding:20px;
+}
+
+.lesson{
+background:#111827;
+padding:16px;
+margin-bottom:12px;
+border-radius:12px;
+cursor:pointer;
+}
+
+button{
+background:#2563eb;
+color:white;
+border:none;
+padding:12px 16px;
+border-radius:10px;
+margin-top:10px;
+}
+
+audio{
+width:100%;
+margin-top:12px;
+}
+
+</style>
 </head>
+
 <body>
-  <header>
-    <h1>IshySpeak</h1>
-    <div class="sub">AI Communication Coach (offline prototype)</div>
-  </header>
 
-  <div class="wrap">
-    <div class="grid">
-      <section class="card">
-        <h2>Daily Training</h2>
-        <div class="muted">Do today’s set (10–15 min). Your progress saves automatically.</div>
+<header>IshySpeak</header>
 
-        <div class="kpi">
-          <div class="box"><div class="n" id="kpiStreak">0</div><div class="l">Day streak</div></div>
-          <div class="box"><div class="n" id="kpiDone">0</div><div class="l">Lessons completed</div></div>
-          <div class="box"><div class="n" id="kpiMinutes">0</div><div class="l">Practice minutes</div></div>
-        </div>
+<div class="container">
 
-        <div class="divider"></div>
-        <ul class="list" id="dailyList"></ul>
+<div class="lesson" onclick="openLesson('first-impression-hacks')">
+<b>First Impression Hacks</b><br>
+Sound confident in the first 10 seconds.
+</div>
 
-        <div class="divider"></div>
-        <div class="row">
-          <button class="btn" id="btnStartDaily">Start daily session</button>
-          <button class="btn secondary" id="btnReset">Reset demo progress</button>
-        </div>
-        <div class="mini" style="margin-top:8px">
-          Tip: If “Add to Home Screen” opens a wrong link, remove the icon and add it again after this page is loaded.
-        </div>
-      </section>
+<div class="lesson" onclick="openLesson('build-trust-with-voice')">
+<b>Build Trust With Your Voice</b>
+</div>
 
-      <section class="card">
-        <h2>Coach Studio</h2>
-        <div class="tabs">
-          <div class="tab active" data-tab="lessons">Lessons</div>
-          <div class="tab" data-tab="practice">Voice Practice</div>
-          <div class="tab" data-tab="progress">Progress</div>
-        </div>
+<div class="lesson" onclick="openLesson('confidence-wins')">
+<b>Confidence Wins</b>
+</div>
 
-        <div class="panel active" id="panel-lessons">
-          <div class="muted">Tap a lesson to open it.</div>
-          <ul class="list" id="lessonList"></ul>
-        </div>
+<div id="lessonArea"></div>
 
-        <div class="panel" id="panel-practice">
-          <div class="muted">Record yourself, play it back, then score it. This is how pros improve fast.</div>
-
-          <div class="prompt">
-            <div style="font-weight:700; margin-bottom:6px">Practice prompt</div>
-            <div id="practicePromptText">Pick a lesson to load a prompt.</div>
-            <div class="mini" id="practicePromptHint"></div>
-          </div>
-
-          <div class="audioRow">
-            <button class="btn" id="btnRecord">Start recording</button>
-            <button class="btn secondary" id="btnStop" disabled>Stop</button>
-            <span class="pill" id="recStatus">Mic: idle</span>
-            <span class="pill" id="recTimer">00:00</span>
-          </div>
-
-          <div class="divider"></div>
-          <audio id="player" controls></audio>
-
-          <div class="divider"></div>
-          <div class="row">
-            <label style="flex:1; min-width:160px">
-              <div class="mini">Self-score (1–5)</div>
-              <input id="score" type="number" min="1" max="5" placeholder="e.g. 4" />
-            </label>
-            <label style="flex:2; min-width:220px">
-              <div class="mini">What will you improve next time?</div>
-              <input id="note" type="text" placeholder="e.g. slower pace, stronger opening line" />
-            </label>
-          </div>
-
-          <div class="row" style="margin-top:10px">
-            <button class="btn" id="btnSavePractice" disabled>Save practice</button>
-            <button class="btn ghost" id="btnLoadDailyPrompt">Load today’s prompt</button>
-          </div>
-
-          <div class="mini" style="margin-top:10px">
-            Microphone permission is required. If it fails, refresh and allow mic.
-          </div>
-        </div>
-
-        <div class="panel" id="panel-progress">
-          <div class="muted">Your saved data (local only on this phone).</div>
-          <div class="divider"></div>
-          <div id="progressBox"></div>
-        </div>
-      </section>
-    </div>
-
-    <section class="card" style="margin-top:12px">
-      <h2 id="lessonTitle">Open a lesson</h2>
-      <div class="muted" id="lessonMeta">Choose a lesson from the list.</div>
-
-      <div class="divider"></div>
-
-      <div id="lessonBody" class="muted">
-        When you open a lesson, you’ll get:
-        <ul class="steps">
-          <li>A quick teaching section</li>
-          <li>1–2 drills</li>
-          <li>A practice prompt you can record</li>
-          <li>Mark as complete when done</li>
-          <li>Coach audio (MP3) if uploaded</li>
-        </ul>
-      </div>
-
-      <div class="divider"></div>
-      <div class="row">
-        <button class="btn" id="btnMarkDone" disabled>Mark lesson complete</button>
-        <button class="btn secondary" id="btnLoadPrompt" disabled>Load this prompt in Voice Practice</button>
-      </div>
-    </section>
-  </div>
+</div>
 
 <script>
-/* =========================
-   Data: Real lesson content (+ audio files)
-   Audio file convention: "<lesson-id>.mp3" in repo root
-========================= */
-const LESSONS = [
-  {
-    id:"first-impression-hacks",
-    title:"First Impression Hacks",
-    time:"6 min",
-    goal:"Sound warm, confident, and clear in the first 10 seconds.",
-    teach:[
-      "Start with a clean greeting + name + purpose.",
-      "Speak 10% slower than you think.",
-      "End the first sentence with a slight downward tone (confidence)."
-    ],
-    drills:[
-      "Say: “Hi, I’m ___, and I help people ___.” Record 2 takes.",
-      "Remove filler words from your first sentence."
-    ],
-    prompt:{
-      text:"Introduce yourself in 20 seconds as if meeting someone important. Name, what you do, and one interesting detail.",
-      hint:"Aim: calm pace, clear ending, no fillers."
-    }
-  },
-  {
-    id:"build-trust-with-voice",
-    title:"Build Trust With Your Voice",
-    time:"8 min",
-    goal:"Make people feel safe and confident listening to you.",
-    teach:[
-      "Use a lower volume than “performance voice”.",
-      "Pause for half a second before important points.",
-      "Smile slightly while speaking (it shows)."
-    ],
-    drills:[
-      "Read one sentence three times: fast / normal / 10% slower. Pick best.",
-      "Add 2 intentional pauses in a short explanation."
-    ],
-    prompt:{
-      text:"Explain what you do to a friend in 30 seconds. Add 2 pauses for emphasis.",
-      hint:"Listen back: do you sound relaxed and believable?"
-    }
-  },
-  {
-    id:"confidence-wins",
-    title:"Confidence Wins",
-    time:"7 min",
-    goal:"Sound decisive without sounding rude.",
-    teach:[
-      "Replace “I think” with “My view is…”",
-      "Avoid rising tone at the end of statements.",
-      "Use short sentences for key points."
-    ],
-    drills:[
-      "Turn 3 hesitant sentences into confident ones.",
-      "Say one key sentence slowly and end downward."
-    ],
-    prompt:{
-      text:"State your opinion on a simple topic (e.g. best habit for success) in 25 seconds. One clear point + one reason.",
-      hint:"No apology language. Clean ending."
-    }
-  },
-  {
-    id:"speak-up-any-room",
-    title:"Speak Up In Any Room",
-    time:"9 min",
-    goal:"Join conversations naturally and be heard.",
-    teach:[
-      "Enter with a ‘bridge’ phrase: “Building on that…”",
-      "Say one sentence first. Then expand if needed.",
-      "Ask a strong question if you’re not ready to state a point."
-    ],
-    drills:[
-      "Practice 3 bridge phrases.",
-      "Turn one thought into a strong question."
-    ],
-    prompt:{
-      text:"Pretend you’re in a meeting. Add one comment using: “Building on that…” then one question.",
-      hint:"Keep it short. Clear. Helpful."
-    }
-  },
-  {
-    id:"storytelling-secrets",
-    title:"Storytelling Secrets",
-    time:"10 min",
-    goal:"Tell stories people remember.",
-    teach:[
-      "Use 3 beats: Situation → Action → Result.",
-      "Add one emotion word: “I was nervous / excited…”",
-      "End with a takeaway: “What I learned was…”"
-    ],
-    drills:[
-      "Tell a 20-second story using the 3 beats.",
-      "Add a takeaway line."
-    ],
-    prompt:{
-      text:"Tell a short story: a time you learned something the hard way. Situation → Action → Result → takeaway.",
-      hint:"Keep it under 35 seconds."
-    }
-  },
-  {
-    id:"body-language",
-    title:"Body Language (Voice Edition)",
-    time:"7 min",
-    goal:"Sound energetic and present (even on the phone).",
-    teach:[
-      "Stand up for important calls.",
-      "Gesture lightly while speaking (changes your tone).",
-      "Take one deep breath before you start."
-    ],
-    drills:[
-      "Record sitting vs standing. Compare energy.",
-      "Add one smile + one gesture moment."
-    ],
-    prompt:{
-      text:"Record a 20-second welcome message to a new client/customer. Warm + energetic.",
-      hint:"Stand up. Smile slightly."
-    }
-  },
-  {
-    id:"read-people-like-pro",
-    title:"Read People Like A Pro",
-    time:"8 min",
-    goal:"Sound socially aware and tuned-in.",
-    teach:[
-      "Mirror keywords: repeat 1–2 words they used.",
-      "Reflect emotion: “That sounds frustrating.”",
-      "Confirm: “Did I get that right?”"
-    ],
-    drills:[
-      "Create 3 reflection sentences.",
-      "Practice one ‘confirm’ question."
-    ],
-    prompt:{
-      text:"Respond to: “Honestly, I’m overwhelmed with everything.” Use reflection + confirm question.",
-      hint:"Warm tone, not robotic."
-    }
-  },
-  {
-    id:"handle-difficult-people",
-    title:"Handle Difficult People",
-    time:"10 min",
-    goal:"Stay calm and firm under pressure.",
-    teach:[
-      "Use: “I hear you.” then state boundary.",
-      "Offer two options (reduces conflict).",
-      "Lower your pace when tension rises."
-    ],
-    drills:[
-      "Say a boundary sentence 3 ways. Choose calmest.",
-      "Create 2 option sentences."
-    ],
-    prompt:{
-      text:"Respond to an angry customer: acknowledge + boundary + two options. Keep it under 35 seconds.",
-      hint:"Slow down. Calm ending."
-    }
-  },
-];
-
-/* =========================
-   Storage + helpers
-========================= */
-const LS_KEY = "ishyspeak_v1";
-const todayKey = () => new Date().toISOString().slice(0,10);
-
-function loadState(){
-  try{
-    return JSON.parse(localStorage.getItem(LS_KEY)) || {
-      done:{}, practice:[], streak:0, lastDay:null, minutes:0
-    };
-  }catch(e){
-    return {done:{}, practice:[], streak:0, lastDay:null, minutes:0};
-  }
-}
-function saveState(s){ localStorage.setItem(LS_KEY, JSON.stringify(s)); }
-
-function computeDailySet(){
-  const d = new Date();
-  const seed = Math.floor(d.getTime()/86400000);
-  const idxs = [];
-  let x = seed;
-  while(idxs.length < 3){
-    x = (x * 9301 + 49297) % 233280;
-    const i = x % LESSONS.length;
-    if(!idxs.includes(i)) idxs.push(i);
-  }
-  return idxs.map(i => LESSONS[i].id);
-}
-
-function escapeHtml(s){
-  return (s||"").replace(/[&<>"']/g, c => ({
-    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
-  }[c]));
-}
-
-function lessonById(id){ return LESSONS.find(l => l.id === id); }
-function isDone(id){ return !!state.done[id]; }
-
-/* =========================
-   UI render
-========================= */
-let state = loadState();
-let currentLessonId = null;
-
-const elDailyList = document.getElementById("dailyList");
-const elLessonList = document.getElementById("lessonList");
-const elLessonTitle = document.getElementById("lessonTitle");
-const elLessonMeta = document.getElementById("lessonMeta");
-const elLessonBody = document.getElementById("lessonBody");
-const btnMarkDone = document.getElementById("btnMarkDone");
-const btnLoadPrompt = document.getElementById("btnLoadPrompt");
-
-const kpiStreak = document.getElementById("kpiStreak");
-const kpiDone = document.getElementById("kpiDone");
-const kpiMinutes = document.getElementById("kpiMinutes");
-
-function updateKPIs(){
-  const doneCount = Object.keys(state.done).length;
-  kpiDone.textContent = doneCount;
-  kpiStreak.textContent = state.streak || 0;
-  kpiMinutes.textContent = Math.round(state.minutes || 0);
-}
-
-function renderLessonLists(){
-  // Lessons list
-  elLessonList.innerHTML = "";
-  LESSONS.forEach(l=>{
-    const li = document.createElement("li");
-    li.className = "item";
-    li.setAttribute("data-lesson-id", l.id);
-    li.innerHTML = `
-      <div>
-        <div style="font-weight:700">${l.title}</div>
-        <div class="mini">${l.goal}</div>
-      </div>
-      <div class="row" style="justify-content:flex-end">
-        <span class="badge">${l.time}</span>
-        <span class="badge ${isDone(l.id) ? "good" : "warn"}">${isDone(l.id) ? "Completed" : "Not done"}</span>
-      </div>
-    `;
-    elLessonList.appendChild(li);
-  });
-
-  // Daily list
-  const daily = computeDailySet();
-  elDailyList.innerHTML = "";
-  daily.forEach(id=>{
-    const l = lessonById(id);
-    const li = document.createElement("li");
-    li.className = "item";
-    li.setAttribute("data-lesson-id", id);
-    li.innerHTML = `
-      <div>
-        <div style="font-weight:700">${l.title}</div>
-        <div class="mini">${l.time} • ${l.goal}</div>
-      </div>
-      <span class="badge ${isDone(id) ? "good" : "warn"}">${isDone(id) ? "Done" : "Do today"}</span>
-    `;
-    elDailyList.appendChild(li);
-  });
-
-  updateKPIs();
-}
 
 function audioUrlForLesson(id){
-  // MP3s are stored in repo root next to index.html
-  // Example: first-impression-hacks.mp3
-  return `./${encodeURIComponent(id)}.mp3`;
+return "https://raw.githubusercontent.com/dhjyj5nrbd-alt/ishyspeak/main/" + id + ".mp3";
 }
 
 function openLesson(id){
-  const l = lessonById(id);
-  if(!l) return;
-  currentLessonId = id;
 
-  elLessonTitle.textContent = l.title;
-  elLessonMeta.textContent = `${l.time} • ${l.goal}`;
+let title=id.replaceAll("-"," ");
 
-  const teach = l.teach.map(t=>`<li>${escapeHtml(t)}</li>`).join("");
-  const drills = l.drills.map(d=>`<li>${escapeHtml(d)}</li>`).join("");
+let audio=audioUrlForLesson(id);
 
-  const mp3 = audioUrlForLesson(id);
+document.getElementById("lessonArea").innerHTML=`
 
-  elLessonBody.innerHTML = `
-    <div class="prompt">
-      <div style="font-weight:800; margin-bottom:6px">Coach audio</div>
-      <div class="mini" style="margin-bottom:8px">Tap play — iPhone won’t autoplay.</div>
-      <audio controls preload="none" src="${mp3}"></audio>
-      <div class="mini" style="margin-top:8px">
-        If it spins forever, check the file exists: <span class="pill">${escapeHtml(id)}.mp3</span>
-      </div>
-    </div>
+<h2>${title}</h2>
 
-    <div class="prompt">
-      <div style="font-weight:800; margin-bottom:6px">Teaching</div>
-      <ol class="steps">${teach}</ol>
-    </div>
+<button onclick="playAudio('${audio}')">
+Coach With Audio
+</button>
 
-    <div class="prompt">
-      <div style="font-weight:800; margin-bottom:6px">Drills</div>
-      <ol class="steps">${drills}</ol>
-    </div>
+<div id="audioBox"></div>
 
-    <div class="prompt">
-      <div style="font-weight:800; margin-bottom:6px">Practice prompt</div>
-      <div>${escapeHtml(l.prompt.text)}</div>
-      <div class="mini">${escapeHtml(l.prompt.hint || "")}</div>
-    </div>
-  `;
+`;
 
-  btnMarkDone.disabled = false;
-  btnLoadPrompt.disabled = false;
 }
 
-/* =========================
-   Tabs
-========================= */
-document.querySelectorAll(".tab").forEach(t=>{
-  t.addEventListener("click", ()=>{
-    document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
-    document.querySelectorAll(".panel").forEach(p=>p.classList.remove("active"));
-    t.classList.add("active");
-    document.getElementById("panel-"+t.dataset.tab).classList.add("active");
-    if(t.dataset.tab==="progress") renderProgress();
-  });
-});
+function playAudio(src){
 
-/* =========================
-   iPhone tap fix: click + touchend
-========================= */
-function lessonIdFromEventTarget(target){
-  const row = target.closest("[data-lesson-id]");
-  return row ? row.getAttribute("data-lesson-id") : null;
-}
-["click","touchend"].forEach(evt=>{
-  document.addEventListener(evt, (e)=>{
-    const id = lessonIdFromEventTarget(e.target);
-    if(!id) return;
-    e.preventDefault();
-    openLesson(id);
-  }, { passive:false });
-});
+document.getElementById("audioBox").innerHTML=`
 
-/* =========================
-   Completion + streak
-========================= */
-btnMarkDone.addEventListener("click", ()=>{
-  if(!currentLessonId) return;
-  state.done[currentLessonId] = true;
+<audio controls autoplay>
+<source src="${src}" type="audio/mpeg">
+</audio>
 
-  const t = todayKey();
-  if(state.lastDay !== t){
-    const yesterday = new Date(Date.now()-86400000).toISOString().slice(0,10);
-    if(state.lastDay === yesterday) state.streak = (state.streak||0)+1;
-    else state.streak = 1;
-    state.lastDay = t;
-  }
+`;
 
-  saveState(state);
-  renderLessonLists();
-});
-
-document.getElementById("btnReset").addEventListener("click", ()=>{
-  if(!confirm("Reset progress on this device?")) return;
-  localStorage.removeItem(LS_KEY);
-  state = loadState();
-  currentLessonId = null;
-  elLessonTitle.textContent = "Open a lesson";
-  elLessonMeta.textContent = "Choose a lesson from the list.";
-  elLessonBody.innerHTML = "Reset done. Pick a lesson to begin.";
-  btnMarkDone.disabled = true;
-  btnLoadPrompt.disabled = true;
-  renderLessonLists();
-});
-
-/* =========================
-   Voice practice: record + playback + save
-========================= */
-const btnRecord = document.getElementById("btnRecord");
-const btnStop = document.getElementById("btnStop");
-const recStatus = document.getElementById("recStatus");
-const recTimer = document.getElementById("recTimer");
-const player = document.getElementById("player");
-const btnSavePractice = document.getElementById("btnSavePractice");
-const scoreEl = document.getElementById("score");
-const noteEl = document.getElementById("note");
-const practicePromptText = document.getElementById("practicePromptText");
-const practicePromptHint = document.getElementById("practicePromptHint");
-
-let mediaRecorder = null;
-let chunks = [];
-let startTs = 0;
-let timerInt = null;
-let lastBlobUrl = null;
-
-function setTimer(ms){
-  const s = Math.max(0, Math.floor(ms/1000));
-  const mm = String(Math.floor(s/60)).padStart(2,"0");
-  const ss = String(s%60).padStart(2,"0");
-  recTimer.textContent = `${mm}:${ss}`;
 }
 
-async function startRecording(){
-  chunks = [];
-  if(lastBlobUrl){ URL.revokeObjectURL(lastBlobUrl); lastBlobUrl=null; }
-  player.src = "";
-  btnSavePractice.disabled = true;
-
-  const stream = await navigator.mediaDevices.getUserMedia({ audio:true });
-  mediaRecorder = new MediaRecorder(stream);
-  mediaRecorder.ondataavailable = e => chunks.push(e.data);
-  mediaRecorder.onstop = () => {
-    stream.getTracks().forEach(t=>t.stop());
-    const blob = new Blob(chunks, { type: "audio/webm" });
-    lastBlobUrl = URL.createObjectURL(blob);
-    player.src = lastBlobUrl;
-    btnSavePractice.disabled = false;
-  };
-  mediaRecorder.start();
-
-  startTs = Date.now();
-  setTimer(0);
-  timerInt = setInterval(()=>setTimer(Date.now()-startTs), 250);
-
-  recStatus.textContent = "Mic: recording…";
-  btnRecord.disabled = true;
-  btnStop.disabled = false;
-}
-
-function stopRecording(){
-  if(!mediaRecorder) return;
-  clearInterval(timerInt);
-  timerInt = null;
-  mediaRecorder.stop();
-  recStatus.textContent = "Mic: stopped";
-  btnRecord.disabled = false;
-  btnStop.disabled = true;
-
-  const mins = (Date.now()-startTs)/60000;
-  state.minutes = (state.minutes||0) + mins;
-  saveState(state);
-  updateKPIs();
-}
-
-btnRecord.addEventListener("click", ()=>{
-  startRecording().catch(err=>{
-    alert("Mic error: " + err.message + "\nTry: refresh → allow microphone.");
-  });
-});
-btnStop.addEventListener("click", stopRecording);
-
-btnSavePractice.addEventListener("click", ()=>{
-  const sc = Number(scoreEl.value || 0);
-  const note = (noteEl.value || "").trim();
-  const lesson = currentLessonId || "daily";
-  const prompt = practicePromptText.textContent || "";
-
-  state.practice.unshift({
-    ts: new Date().toISOString(),
-    lesson,
-    score: (sc>=1 && sc<=5) ? sc : null,
-    note,
-    prompt
-  });
-  saveState(state);
-
-  scoreEl.value = "";
-  noteEl.value = "";
-  btnSavePractice.disabled = true;
-
-  alert("Saved ✅");
-});
-
-function loadPromptFromLesson(id){
-  const l = lessonById(id);
-  if(!l) return;
-  practicePromptText.textContent = l.prompt.text;
-  practicePromptHint.textContent = l.prompt.hint || "";
-}
-
-btnLoadPrompt.addEventListener("click", ()=>{
-  if(!currentLessonId) return;
-  loadPromptFromLesson(currentLessonId);
-  document.querySelector('.tab[data-tab="practice"]').click();
-});
-
-document.getElementById("btnLoadDailyPrompt").addEventListener("click", ()=>{
-  const daily = computeDailySet();
-  const first = daily.find(id=>!isDone(id)) || daily[0];
-  loadPromptFromLesson(first);
-});
-
-document.getElementById("btnStartDaily").addEventListener("click", ()=>{
-  const daily = computeDailySet();
-  const first = daily.find(id=>!isDone(id)) || daily[0];
-  openLesson(first);
-  loadPromptFromLesson(first);
-  document.querySelector('.tab[data-tab="practice"]').click();
-});
-
-/* =========================
-   Progress screen
-========================= */
-function renderProgress(){
-  const box = document.getElementById("progressBox");
-  const doneIds = Object.keys(state.done);
-  const recent = state.practice.slice(0,8);
-
-  box.innerHTML = `
-    <div class="row">
-      <span class="badge good">${doneIds.length} completed</span>
-      <span class="badge">${(state.streak||0)} day streak</span>
-      <span class="badge">${Math.round(state.minutes||0)} mins practice</span>
-    </div>
-    <div class="divider"></div>
-    <div style="font-weight:800; margin-bottom:8px">Recent practice</div>
-    ${recent.length ? recent.map(p=>`
-      <div class="prompt">
-        <div style="font-weight:700">${escapeHtml(lessonById(p.lesson)?.title || p.lesson)}</div>
-        <div class="mini">${new Date(p.ts).toLocaleString()} • Score: ${p.score ?? "—"}</div>
-        <div style="margin-top:6px">${escapeHtml(p.prompt || "")}</div>
-        <div class="mini" style="margin-top:6px">Note: ${escapeHtml(p.note || "—")}</div>
-      </div>
-    `).join("") : `<div class="muted">No practice saved yet.</div>`}
-  `;
-}
-
-/* =========================
-   Init
-========================= */
-renderLessonLists();
-updateKPIs();
-
-/* =========================
-   ✅ Service worker OFF (fixes endless MP3 loading)
-   Unregister any old SW + clear caches
-========================= */
-(async () => {
-  if (!("serviceWorker" in navigator)) return;
-
-  try {
-    const regs = await navigator.serviceWorker.getRegistrations();
-    for (const r of regs) await r.unregister();
-  } catch (_) {}
-
-  try {
-    if (window.caches) {
-      const keys = await caches.keys();
-      for (const k of keys) await caches.delete(k);
-    }
-  } catch (_) {}
-})();
 </script>
+
 </body>
 </html>
