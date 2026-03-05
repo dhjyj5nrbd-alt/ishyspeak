@@ -1,0 +1,373 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>IshySpeak</title>
+
+  <!-- PWA -->
+  <link rel="manifest" href="./manifest.webmanifest">
+  <meta name="theme-color" content="#111827">
+  <link rel="apple-touch-icon" href="./icon-192.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+  <style>
+    :root { --bg:#fff; --text:#0b0b0f; --sub:#6b7280; --border:#e5e7eb; --card:#f9fafb; --accent:#111827; }
+    body { margin:0; font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial; background:var(--bg); color:var(--text); }
+    header { padding:18px 16px 12px; position:sticky; top:0; background:rgba(255,255,255,.92); backdrop-filter:saturate(180%) blur(16px); border-bottom:1px solid var(--border); }
+    h1 { margin:0; font-size:28px; font-weight:800; }
+    .sub { margin-top:6px; color:var(--sub); font-size:14px; }
+    .tabs { display:flex; gap:10px; padding:12px 16px; border-bottom:1px solid var(--border); }
+    .tab { padding:10px 12px; border:1px solid var(--border); border-radius:12px; background:#fff; font-weight:700; }
+    .tab.active { background:var(--accent); color:#fff; border-color:var(--accent); }
+    main { padding:14px 16px 90px; }
+    .card { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:14px; margin-bottom:10px; }
+    .row { display:flex; justify-content:space-between; align-items:center; gap:12px; }
+    .title { font-size:16px; font-weight:800; }
+    .meta { color:var(--sub); font-size:13px; margin-top:4px; }
+    button { border:1px solid var(--border); background:#fff; border-radius:12px; padding:10px 12px; font-weight:800; }
+    button.primary { background:var(--accent); color:#fff; border-color:var(--accent); }
+    .player { position:fixed; left:0; right:0; bottom:0; border-top:1px solid var(--border); background:rgba(255,255,255,.95); backdrop-filter:saturate(180%) blur(16px); padding:12px 12px 22px; }
+    .bar { height:10px; border:1px solid var(--border); border-radius:999px; overflow:hidden; background:#fff; margin-top:10px; }
+    .fill { height:100%; width:0%; background:var(--accent); }
+    .small { color:var(--sub); font-size:12px; }
+    textarea { width:100%; height:92px; border-radius:12px; border:1px solid var(--border); padding:10px; font-family:inherit; }
+    input[type="range"] { width:100%; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>IshySpeak</h1>
+    <div class="sub">Charisma coaching • segmented lessons • practice recording • streaks</div>
+  </header>
+
+  <div class="tabs">
+    <div class="tab active" data-tab="lessons">Lessons</div>
+    <div class="tab" data-tab="bookmarks">Bookmarks</div>
+    <div class="tab" data-tab="practice">Practice</div>
+    <div class="tab" data-tab="progress">Progress</div>
+  </div>
+
+  <main id="view"></main>
+
+  <div class="player" id="player" style="display:none">
+    <div class="row">
+      <div style="flex:1">
+        <div class="title" id="nowTitle">—</div>
+        <div class="small" id="nowMeta">—</div>
+      </div>
+      <button id="prevSeg">◀◀</button>
+      <button class="primary" id="playPause">Play</button>
+      <button id="nextSeg">▶▶</button>
+    </div>
+
+    <div class="bar"><div class="fill" id="fill"></div></div>
+    <div class="row" style="margin-top:10px">
+      <div class="small" id="time">0:00 / 0:00</div>
+      <button id="back15">-15s</button>
+      <button id="fwd15">+15s</button>
+    </div>
+    <input id="seek" type="range" min="0" max="1000" value="0">
+  </div>
+
+  <script>
+    // ===== Data: 15 lessons, each with segments =====
+    const lessons = [
+      {id:"01", title:"First Impression Hacks", durationMin:15, segments:[
+        {sid:"a", title:"First 7 seconds", text:"Welcome to Lesson 1. In the first seven seconds, people judge your energy, eye contact, and voice. Stand tall. Relax your shoulders. Small smile."},
+        {sid:"b", title:"Voice & pace", text:"Now say slowly: Hi, great to meet you. Pause. Confidence comes from slowing down."},
+        {sid:"c", title:"Eye contact", text:"Hold eye contact for one extra second. It signals calm confidence, not pressure."},
+        {sid:"d", title:"Practice drill", text:"Practice: Hi, I'm Ishy. Good to meet you. Repeat five times, slower than you think."},
+      ]},
+      {id:"02", title:"Build Trust With Your Voice", durationMin:11, segments:[
+        {sid:"a", title:"Three levers", text:"Trust comes from pace, warmth, and clarity. Slow down about fifteen percent and speak cleanly."},
+        {sid:"b", title:"Replace um with pause", text:"Instead of um, pause. Silence reads as confidence."},
+        {sid:"c", title:"Repeat after me", text:"Say: Let me explain what I'm thinking. Pause. Say it again, calmer."},
+        {sid:"d", title:"Daily mission", text:"Today: use three intentional pauses in real conversations."},
+      ]},
+      // Keep the rest short for now; we’ll expand later.
+    ];
+
+    // If fewer than 15 are defined, fill placeholders (so UI works)
+    const titles = [
+      "Confidence Wins","Speak Up In Any Room","Storytelling Secrets","Body Language","Read People Like a Pro",
+      "Give Tough Feedback","Handle Difficult People","Say No and Be Likable","Interrupt Smoothly","Defuse Conflict",
+      "Listen Like a Leader","Small Talk Magic","The Power of a Perfect Pause"
+    ];
+    for (let i=3;i<=15;i++){
+      const id=String(i).padStart(2,"0");
+      if (!lessons.find(l=>l.id===id)){
+        const t=titles[i-3]||("Lesson "+id);
+        lessons.push({id, title:t, durationMin:12, segments:[
+          {sid:"a", title:"Coach intro", text:`Welcome to Lesson ${id}: ${t}. We'll do one key idea, one example, and one drill.`},
+          {sid:"b", title:"Key idea", text:"Here is the key idea: slow down, be clear, and end with a simple next step."},
+          {sid:"c", title:"Example", text:"Example: One option we could explore is… pause… then your reason in one sentence."},
+          {sid:"d", title:"Drill", text:"Your drill: say one strong sentence, pause for one second, then stop talking."},
+        ]});
+      }
+    }
+    lessons.sort((a,b)=>a.id.localeCompare(b.id));
+
+    // ===== State + Storage =====
+    const LS = {
+      favKey:"ishyspeak:favs",
+      streakKey:"ishyspeak:streak",
+      resumeKey:"ishyspeak:resume",
+      recKey:"ishyspeak:recordings"
+    };
+
+    const getJSON = (k, fallback) => {
+      try { return JSON.parse(localStorage.getItem(k) || "") ?? fallback; } catch { return fallback; }
+    };
+    const setJSON = (k, v) => localStorage.setItem(k, JSON.stringify(v));
+
+    let favs = getJSON(LS.favKey, {});
+    let resume = getJSON(LS.resumeKey, {}); // lessonId -> {idx, t}
+    let streak = getJSON(LS.streakKey, {current:0,best:0,last:null});
+    let recordings = getJSON(LS.recKey, []);
+
+    const todayISO = () => new Date().toISOString().slice(0,10);
+    const ydayISO = () => {
+      const d=new Date(); d.setDate(d.getDate()-1);
+      return d.toISOString().slice(0,10);
+    };
+    const markDoneToday = () => {
+      const t=todayISO();
+      if (streak.last===t) return;
+      streak.current = (streak.last===ydayISO()) ? (streak.current+1) : 1;
+      streak.best = Math.max(streak.best, streak.current);
+      streak.last = t;
+      setJSON(LS.streakKey, streak);
+    };
+
+    // ===== TTS (web fallback): iPhone-only uses built-in speech for now =====
+    // Realistic cloud TTS needs a backend. We’ll add it later.
+    function speak(text){
+      if (!("speechSynthesis" in window)) return;
+      speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      u.rate = 0.95;
+      u.pitch = 1.0;
+      speechSynthesis.speak(u);
+    }
+
+    // ===== Segmented “playlist” player (web) =====
+    let currentLesson = null;
+    let segIndex = 0;
+    let isPlaying = false;
+    let segStart = 0;       // timestamp when play started
+    let segElapsed = 0;     // seconds into segment
+    let segDuration = 35;   // fake duration for slider (web TTS doesn’t give duration)
+
+    const playerEl = document.getElementById("player");
+    const nowTitle = document.getElementById("nowTitle");
+    const nowMeta = document.getElementById("nowMeta");
+    const playPause = document.getElementById("playPause");
+    const fill = document.getElementById("fill");
+    const timeEl = document.getElementById("time");
+    const seek = document.getElementById("seek");
+
+    function openPlayer(lessonId){
+      currentLesson = lessons.find(l=>l.id===lessonId);
+      const saved = resume[lessonId];
+      segIndex = saved?.idx ?? 0;
+      segElapsed = saved?.t ?? 0;
+      updateNow();
+      playerEl.style.display="block";
+    }
+
+    function updateNow(){
+      const seg = currentLesson.segments[segIndex];
+      nowTitle.textContent = `Lesson ${currentLesson.id}: ${currentLesson.title}`;
+      nowMeta.textContent = `Segment ${segIndex+1}/${currentLesson.segments.length} • ${seg.title}`;
+      renderProgress();
+    }
+
+    function renderProgress(){
+      const p = Math.min(Math.max(segElapsed/segDuration,0),1);
+      fill.style.width = (p*100)+"%";
+      seek.value = Math.floor(p*1000);
+      timeEl.textContent = fmt(segElapsed) + " / " + fmt(segDuration);
+    }
+
+    function fmt(sec){
+      sec = Math.max(0, Math.floor(sec));
+      const m = Math.floor(sec/60);
+      const s = sec%60;
+      return `${m}:${String(s).padStart(2,"0")}`;
+    }
+
+    function saveResume(){
+      if(!currentLesson) return;
+      resume[currentLesson.id] = { idx: segIndex, t: segElapsed };
+      setJSON(LS.resumeKey, resume);
+    }
+
+    function play(){
+      if(!currentLesson) return;
+      isPlaying = true;
+      playPause.textContent = "Pause";
+      const seg = currentLesson.segments[segIndex];
+      speak(seg.text);
+      segStart = Date.now() - segElapsed*1000;
+      tick();
+    }
+
+    function pause(){
+      isPlaying = false;
+      playPause.textContent = "Play";
+      speechSynthesis.cancel();
+      saveResume();
+    }
+
+    function next(){
+      if(!currentLesson) return;
+      segIndex = Math.min(segIndex+1, currentLesson.segments.length-1);
+      segElapsed = 0;
+      saveResume();
+      updateNow();
+      if(isPlaying) play();
+    }
+
+    function prev(){
+      if(!currentLesson) return;
+      segIndex = Math.max(segIndex-1, 0);
+      segElapsed = 0;
+      saveResume();
+      updateNow();
+      if(isPlaying) play();
+    }
+
+    function seekToPct(pct){
+      segElapsed = pct*segDuration;
+      saveResume();
+      renderProgress();
+      if(isPlaying){
+        // web TTS can't truly seek; restart speech from beginning
+        play();
+      }
+    }
+
+    function tick(){
+      if(!isPlaying) return;
+      segElapsed = (Date.now()-segStart)/1000;
+      renderProgress();
+      if (segElapsed >= segDuration){
+        // auto-advance
+        if (segIndex < currentLesson.segments.length-1){
+          segIndex++; segElapsed=0; saveResume(); updateNow(); play();
+        } else {
+          // lesson finished
+          isPlaying=false;
+          playPause.textContent="Play";
+          markDoneToday();
+          saveResume();
+        }
+        return;
+      }
+      requestAnimationFrame(tick);
+    }
+
+    // Controls
+    playPause.onclick = () => isPlaying ? pause() : play();
+    document.getElementById("nextSeg").onclick = next;
+    document.getElementById("prevSeg").onclick = prev;
+    document.getElementById("back15").onclick = () => { segElapsed=Math.max(0, segElapsed-15); saveResume(); renderProgress(); if(isPlaying) play(); };
+    document.getElementById("fwd15").onclick = () => { segElapsed=Math.min(segDuration, segElapsed+15); saveResume(); renderProgress(); if(isPlaying) play(); };
+    seek.oninput = (e) => seekToPct((e.target.value/1000));
+
+    // ===== Views =====
+    const view = document.getElementById("view");
+    const tabs = [...document.querySelectorAll(".tab")];
+
+    function setTab(name){
+      tabs.forEach(t=>t.classList.toggle("active", t.dataset.tab===name));
+      if(name==="lessons") renderLessons(false);
+      if(name==="bookmarks") renderLessons(true);
+      if(name==="practice") renderPractice();
+      if(name==="progress") renderProgressView();
+    }
+    tabs.forEach(t=>t.onclick=()=>setTab(t.dataset.tab));
+
+    function renderLessons(onlyFav){
+      const list = onlyFav ? lessons.filter(l=>favs[l.id]) : lessons;
+      view.innerHTML = list.map(l => `
+        <div class="card">
+          <div class="row">
+            <div style="flex:1" onclick="window.__open('${l.id}')">
+              <div class="title">Lesson ${l.id}: ${l.title}</div>
+              <div class="meta">${l.durationMin} min • ${l.segments.length} segments</div>
+            </div>
+            <button onclick="window.__fav('${l.id}')">${favs[l.id] ? "★" : "☆"}</button>
+          </div>
+        </div>
+      `).join("") || `<div class="card"><div class="meta">No bookmarks yet.</div></div>`;
+    }
+
+    function renderPractice(){
+      view.innerHTML = `
+        <div class="card">
+          <div class="title">Today’s prompt</div>
+          <div class="meta" style="margin-top:8px">${PRACTICE_PROMPTS()}</div>
+          <div style="margin-top:12px" class="row">
+            <button class="primary" id="startRec">Start recording</button>
+            <button id="stopRec" disabled>Stop & Save</button>
+          </div>
+          <div class="meta" id="recStatus" style="margin-top:10px"></div>
+        </div>
+
+        <div class="card">
+          <div class="title">Your recordings</div>
+          <div class="meta" style="margin-top:8px">On iPhone-only PWA, recordings are limited. We’ll enable full recording in the native build.</div>
+        </div>
+      `;
+      // Web recording in Safari is possible, but doing it robustly is a lot.
+      // For iPhone-only we’ll keep practice as a speaking drill now.
+      document.getElementById("startRec").onclick = () => {
+        markDoneToday();
+        document.getElementById("recStatus").textContent = "Practice marked complete for today. Streak updated.";
+      };
+    }
+
+    function PRACTICE_PROMPTS(){
+      const prompts = [
+        "Introduce yourself in 20 seconds with calm confidence.",
+        "Tell a one-minute story using Situation, Problem, Result.",
+        "Say no politely using Appreciate, Decline, Alternative.",
+        "Deliver feedback using Observation, Impact, Suggestion.",
+      ];
+      const i = Math.floor(Date.now()/(1000*60*60*6)) % prompts.length;
+      return prompts[i];
+    }
+
+    function renderProgressView(){
+      view.innerHTML = `
+        <div class="card">
+          <div class="title">Streak</div>
+          <div class="meta" style="margin-top:8px">Current: <b>${streak.current}</b> • Best: <b>${streak.best}</b></div>
+          <div class="meta" style="margin-top:4px">Last practice: ${streak.last || "—"}</div>
+        </div>
+        <div class="card">
+          <div class="title">Next step</div>
+          <div class="meta" style="margin-top:8px">
+            This iPhone-only version uses built-in voice. Next we’ll add realistic AI voice by deploying a secure TTS backend (no computer required).
+          </div>
+        </div>
+      `;
+    }
+
+    // Global handlers for inline onclick
+    window.__fav = (id) => { favs[id]=!favs[id]; setJSON(LS.favKey, favs); setTab(document.querySelector(".tab.active").dataset.tab); };
+    window.__open = (id) => { openPlayer(id); setTab(document.querySelector(".tab.active").dataset.tab); };
+
+    // Register service worker for PWA (optional)
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("./sw.js").catch(()=>{});
+    }
+
+    // Start
+    setTab("lessons");
+  </script>
+</body>
+</html>
