@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+
+<title>IshySpeak</title>
+
+<link rel="manifest" href="./web/manifest.webmanifest">
+<meta name="theme-color" content="#111827">
+
+<style>
+
+body{
+margin:0;
+font-family:-apple-system,BlinkMacSystemFont;
+background:#0f172a;
+color:white;
+}
+
+header{
+padding:20px;
+text-align:center;
+background:#111827;
+}
+
+h1{
+margin:0;
+font-size:28px;
+}
+
+.subtitle{
+font-size:14px;
+opacity:0.7;
+margin-top:4px;
+}
+
+.container{
+padding:20px;
+}
+
+.card{
+background:#1f2937;
+border-radius:14px;
+padding:20px;
+margin-bottom:20px;
+}
+
+button{
+width:100%;
+padding:16px;
+border:none;
+border-radius:10px;
+font-size:16px;
+margin-top:10px;
+}
+
+.play{
+background:#22c55e;
+color:white;
+}
+
+.stop{
+background:#ef4444;
+color:white;
+}
+
+.record{
+background:#3b82f6;
+color:white;
+}
+
+.lesson{
+padding:14px;
+border-bottom:1px solid #374151;
+}
+
+.lesson:last-child{
+border-bottom:none;
+}
+
+</style>
+</head>
+
+<body>
+
+<header>
+<h1>IshySpeak</h1>
+<div class="subtitle">AI Communication Coach</div>
+</header>
+
+<div class="container">
+
+<div class="card">
+
+<h3>Today's Training</h3>
+
+<div class="lesson">1. First Impression Hacks</div>
+<div class="lesson">2. Build Trust With Your Voice</div>
+<div class="lesson">3. Confidence Wins</div>
+<div class="lesson">4. Speak Up In Any Room</div>
+<div class="lesson">5. Storytelling Secrets</div>
+<div class="lesson">6. Body Language</div>
+<div class="lesson">7. Read People Like A Pro</div>
+<div class="lesson">8. Handle Difficult People</div>
+
+</div>
+
+<div class="card">
+
+<h3>Practice Coach</h3>
+
+<button class="record" onclick="startRecording()">Start Practice Recording</button>
+
+<button class="stop" onclick="stopRecording()">Stop Recording</button>
+
+</div>
+
+<div class="card">
+
+<h3>Audio Lesson</h3>
+
+<button class="play" onclick="playLesson()">Play Coaching Audio</button>
+
+</div>
+
+</div>
+
+<script>
+
+let recorder
+let audioChunks=[]
+
+async function startRecording(){
+
+const stream=await navigator.mediaDevices.getUserMedia({audio:true})
+
+recorder=new MediaRecorder(stream)
+
+recorder.ondataavailable=e=>{
+audioChunks.push(e.data)
+}
+
+recorder.start()
+
+alert("Recording started")
+
+}
+
+function stopRecording(){
+
+recorder.stop()
+
+alert("Recording saved. Practice complete.")
+
+}
+
+function playLesson(){
+
+const msg=new SpeechSynthesisUtterance(
+"Welcome to Ishy Speak. Today we practice confident communication. Speak slowly. Maintain eye contact. Pause between ideas."
+)
+
+speechSynthesis.speak(msg)
+
+}
+
+</script>
+
+</body>
+</html>
