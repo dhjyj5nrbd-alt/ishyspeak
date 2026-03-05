@@ -715,18 +715,26 @@ if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("./sw.js").catch(()=>{});
 }
 </script>
-  <script>
+<script>
 document.addEventListener("click", function(e){
+
   const btn = e.target.closest("button");
   if(!btn) return;
 
-  if(btn.textContent.includes("Do today")){
+  if(btn.textContent.includes("Due today")){
+
     const practiceTab = document.querySelector('[data-tab="practice"]');
-    if(practiceTab) practiceTab.click();
+    if(practiceTab){
+      practiceTab.click();
+    }
 
     const prompt = document.querySelector("#practicePromptText");
-    if(prompt) prompt.textContent = "Introduce yourself in 20 seconds as if meeting someone important.";
+    if(prompt){
+      prompt.textContent = "Introduce yourself in 20 seconds as if meeting someone important.";
+    }
+
   }
+
 });
 </script>
 </body>
