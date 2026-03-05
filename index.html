@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>IshySpeak</title>
 
-  <!-- PWA -->
   <meta name="theme-color" content="#111827" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -13,14 +12,17 @@
   <style>
     :root{
       --bg:#0b1020; --card:#111827; --muted:#94a3b8; --text:#e5e7eb;
-      --line:rgba(148,163,184,.25); --accent:#60a5fa; --good:#34d399; --warn:#fbbf24;
-      --bad:#fb7185; --btn:#2563eb; --btn2:#0f172a;
+      --line:rgba(148,163,184,.25); --good:#34d399; --warn:#fbbf24; --bad:#fb7185;
+      --btn:#2563eb; --btn2:#0f172a;
     }
     *{box-sizing:border-box}
     body{
-      margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,Helvetica,Arial,sans-serif;
+      margin:0;
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,Helvetica,Arial,sans-serif;
       background:linear-gradient(180deg,#050814 0%, #0b1020 30%, #0b1020 100%);
       color:var(--text);
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
     }
     header{padding:22px 16px 8px; text-align:center}
     header h1{margin:0; font-size:34px; letter-spacing:.2px}
@@ -43,13 +45,15 @@
       background:var(--btn); color:white; font-weight:600; cursor:pointer;
     }
     .btn.secondary{background:var(--btn2); border:1px solid rgba(148,163,184,.25)}
-    .btn.ghost{background:transparent; border:1px solid rgba(148,163,184,.25)}
+    .btn.ghost{background:transparent; border:1px solid rgba(148,163,184,.25); color:var(--text)}
     .btn:disabled{opacity:.5; cursor:not-allowed}
     .list{margin:0; padding:0; list-style:none}
     .item{
-      padding:12px 12px; border-top:1px solid var(--line);
+      padding:12px 12px;
+      border-top:1px solid var(--line);
       display:flex; justify-content:space-between; align-items:center; gap:10px;
       cursor:pointer;
+      pointer-events:auto;
     }
     .item:first-child{border-top:none}
     .badge{
@@ -65,7 +69,14 @@
     .kpi .box .n{font-size:18px; font-weight:800}
     .kpi .box .l{font-size:12px; color:var(--muted); margin-top:4px}
     .tabs{display:flex; gap:8px; margin:6px 0 12px; flex-wrap:wrap}
-    .tab{padding:8px 10px; border-radius:999px; border:1px solid rgba(148,163,184,.25); cursor:pointer; color:var(--muted)}
+    .tab{
+      padding:8px 10px;
+      border-radius:999px;
+      border:1px solid rgba(148,163,184,.25);
+      cursor:pointer;
+      color:var(--muted);
+      pointer-events:auto;
+    }
     .tab.active{color:var(--text); border-color:rgba(96,165,250,.55); background:rgba(37,99,235,.18)}
     .panel{display:none}
     .panel.active{display:block}
@@ -381,7 +392,6 @@ function loadState(){
 function saveState(s){ localStorage.setItem(LS_KEY, JSON.stringify(s)); }
 
 function computeDailySet(){
-  // deterministic “random”: based on day number
   const d = new Date();
   const seed = Math.floor(d.getTime()/86400000);
   const idxs = [];
@@ -428,20 +438,17 @@ function renderLessonLists(){
   LESSONS.forEach(l=>{
     const li = document.createElement("li");
     li.className = "item";
-    li.onclick = ()=>openLesson(l.id);
-    const left = document.createElement("div");
-    left.innerHTML = `<div style="font-weight:700">${l.title}</div><div class="mini">${l.goal}</div>`;
-    const right = document.createElement("div");
-    right.className = "row";
-    right.style.justifyContent = "flex-end";
-    const b1 = document.createElement("span");
-    b1.className = "badge";
-    b1.textContent = l.time;
-    const b2 = document.createElement("span");
-    b2.className = "badge " + (isDone(l.id) ? "good" : "warn");
-    b2.textContent = isDone(l.id) ? "Completed" : "Not done";
-    right.appendChild(b1); right.appendChild(b2);
-    li.appendChild(left); li.appendChild(right);
+    li.setAttribute("data-lesson-id", l.id);
+    li.innerHTML = `
+      <div>
+        <div style="font-weight:700">${l.title}</div>
+        <div class="mini">${l.goal}</div>
+      </div>
+      <div class="row" style="justify-content:flex-end">
+        <span class="badge">${l.time}</span>
+        <span class="badge ${isDone(l.id) ? "good" : "warn"}">${isDone(l.id) ? "Completed" : "Not done"}</span>
+      </div>
+    `;
     elLessonList.appendChild(li);
   });
 
@@ -452,13 +459,14 @@ function renderLessonLists(){
     const l = lessonById(id);
     const li = document.createElement("li");
     li.className = "item";
-    li.onclick = ()=>openLesson(id);
-    const left = document.createElement("div");
-    left.innerHTML = `<div style="font-weight:700">${l.title}</div><div class="mini">${l.time} • ${l.goal}</div>`;
-    const b = document.createElement("span");
-    b.className = "badge " + (isDone(id) ? "good" : "warn");
-    b.textContent = isDone(id) ? "Done" : "Do today";
-    li.appendChild(left); li.appendChild(b);
+    li.setAttribute("data-lesson-id", id);
+    li.innerHTML = `
+      <div>
+        <div style="font-weight:700">${l.title}</div>
+        <div class="mini">${l.time} • ${l.goal}</div>
+      </div>
+      <span class="badge ${isDone(id) ? "good" : "warn"}">${isDone(id) ? "Done" : "Do today"}</span>
+    `;
     elDailyList.appendChild(li);
   });
 
@@ -518,13 +526,29 @@ document.querySelectorAll(".tab").forEach(t=>{
 });
 
 /* =========================
+   iPhone tap fix (click + touchend)
+   Opens lessons reliably
+========================= */
+function lessonIdFromEventTarget(target){
+  const row = target.closest("[data-lesson-id]");
+  return row ? row.getAttribute("data-lesson-id") : null;
+}
+["click","touchend"].forEach(evt=>{
+  document.addEventListener(evt, (e)=>{
+    const id = lessonIdFromEventTarget(e.target);
+    if(!id) return;
+    e.preventDefault();
+    openLesson(id);
+  }, { passive:false });
+});
+
+/* =========================
    Completion + streak
 ========================= */
 btnMarkDone.addEventListener("click", ()=>{
   if(!currentLessonId) return;
   state.done[currentLessonId] = true;
 
-  // streak logic
   const t = todayKey();
   if(state.lastDay !== t){
     const yesterday = new Date(Date.now()-86400000).toISOString().slice(0,10);
@@ -613,7 +637,6 @@ function stopRecording(){
   btnRecord.disabled = false;
   btnStop.disabled = true;
 
-  // add practice minutes (rough)
   const mins = (Date.now()-startTs)/60000;
   state.minutes = (state.minutes||0) + mins;
   saveState(state);
@@ -622,7 +645,7 @@ function stopRecording(){
 
 btnRecord.addEventListener("click", ()=>{
   startRecording().catch(err=>{
-    alert("Mic error: " + err.message + "\\nTry: refresh → allow microphone.");
+    alert("Mic error: " + err.message + "\nTry: refresh → allow microphone.");
   });
 });
 btnStop.addEventListener("click", stopRecording);
@@ -659,7 +682,6 @@ function loadPromptFromLesson(id){
 btnLoadPrompt.addEventListener("click", ()=>{
   if(!currentLessonId) return;
   loadPromptFromLesson(currentLessonId);
-  // switch to practice tab
   document.querySelector('.tab[data-tab="practice"]').click();
 });
 
@@ -714,26 +736,6 @@ updateKPIs();
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("./sw.js").catch(()=>{});
 }
-</script>
-
-<!-- Button label safety: supports BOTH "Do today" and "Due today" -->
-<script>
-document.addEventListener("click", function(e){
-  const btn = e.target.closest("button");
-  if(!btn) return;
-
-  const label = (btn.textContent || "").trim().toLowerCase();
-
-  if(label.includes("do today") || label.includes("due today")){
-    const practiceTab = document.querySelector('[data-tab="practice"]');
-    if(practiceTab) practiceTab.click();
-
-    const prompt = document.querySelector("#practicePromptText");
-    if(prompt){
-      prompt.textContent = "Introduce yourself in 20 seconds as if meeting someone important.";
-    }
-  }
-});
 </script>
 
 </body>
