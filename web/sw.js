@@ -1,20 +1,11 @@
-const CACHE_NAME = "ishyspeak-v1";
+self.addEventListener("install", () => {
+  self.skipWaiting();
+});
 
-const ASSETS = [
-  "./index.html",
-  "./manifest.webmanifest"
-];
-
-self.addEventListener("install", (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))
-  );
+self.addEventListener("activate", () => {
+  self.clients.claim();
 });
 
 self.addEventListener("fetch", (event) => {
-  event.respondWith(
-    caches.match(event.request).then((response) => {
-      return response || fetch(event.request);
-    })
-  );
+  // Do nothing — allow normal network requests
 });
