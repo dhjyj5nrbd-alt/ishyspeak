@@ -737,6 +737,79 @@ if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("./sw.js").catch(()=>{});
 }
 </script>
+<script>
+/**
+ * iPhone-safe tap handler:
+ * - Opens lessons when you tap any lesson row
+ * - Opens daily lesson when you tap daily row
+ * - If you tap the "Do today / Due today" badge, it also loads that prompt + switches to Voice Practice
+ */
+(function () {
+  function normalize(s){ return (s || "").trim().toLowerCase(); }
 
+  function findLessonIdFromRow(row){
+    // Prefer explicit data attr if present
+    const dataId = row.getAttribute("data-lesson-id");
+    if (dataId) return dataId;
+
+    // Otherwise match by title text in the row
+    const titleEl = row.querySelector("div[style*='font-weight:700']");
+    const title = normalize(titleEl ? titleEl.textContent : row.textContent);
+    if (!window.LESSONS || !Array.isArray(window.LESSONS)) return null;
+
+    const match = window.LESSONS.find(l => normalize(l.title) === title);
+    return match ? match.id : null;
+  }
+
+  function openAndScroll(id){
+    if (!id) return;
+    if (typeof window.openLesson === "function") {
+      window.openLesson(id);
+
+      // Make it obvious something happened
+      const details = document.querySelector("#lessonTitle") || document.querySelector("#lessonBody");
+      if (details) details.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }
+
+  function loadPromptAndGoPractice(id){
+    if (!id) return;
+    if (typeof window.loadPromptFromLesson === "function") window.loadPromptFromLesson(id);
+    const practiceTab = document.querySelector('.tab[data-tab="practice"]');
+    if (practiceTab) practiceTab.click();
+  }
+
+  function handler(e){
+    const target = e.target;
+
+    // Lesson list row tap
+    const lessonRow = target.closest("#lessonList .item");
+    if (lessonRow) {
+      const id = findLessonIdFromRow(lessonRow);
+      openAndScroll(id);
+      return;
+    }
+
+    // Daily list row tap
+    const dailyRow = target.closest("#dailyList .item");
+    if (dailyRow) {
+      const id = findLessonIdFromRow(dailyRow);
+      openAndScroll(id);
+
+      // If they tapped the badge that says Do/Due today, also load prompt + go to practice
+      const badge = target.closest(".badge");
+      const badgeText = normalize(badge ? badge.textContent : "");
+      if (badgeText.includes("do today") || badgeText.includes("due today")) {
+        loadPromptAndGoPractice(id);
+      }
+      return;
+    }
+  }
+
+  // Use both click + touchend for iPhone reliability
+  document.addEventListener("click", handler, { passive: true });
+  document.addEventListener("touchend", handler, { passive: true });
+})();
+</script>
 </body>
 </html>
