@@ -54,7 +54,6 @@
       display:flex; justify-content:space-between; align-items:center; gap:10px;
       cursor:pointer;
       pointer-events:auto;
-      user-select:none;
     }
     .item:first-child{border-top:none}
     .badge{
@@ -77,7 +76,6 @@
       cursor:pointer;
       color:var(--muted);
       pointer-events:auto;
-      user-select:none;
     }
     .tab.active{color:var(--text); border-color:rgba(96,165,250,.55); background:rgba(37,99,235,.18)}
     .panel{display:none}
@@ -98,14 +96,7 @@
     .divider{height:1px; background:var(--line); margin:12px 0}
     .audioRow{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
     .pill{padding:6px 10px; border-radius:999px; border:1px solid rgba(148,163,184,.25); color:var(--muted); font-size:12px}
-
-    .coachAudioBox{
-      border:1px solid rgba(148,163,184,.18);
-      background:rgba(2,6,23,.35);
-      padding:12px;
-      border-radius:14px;
-      margin:10px 0;
-    }
+    audio{width:100%}
   </style>
 </head>
 <body>
@@ -169,7 +160,7 @@
           </div>
 
           <div class="divider"></div>
-          <audio id="player" controls style="width:100%"></audio>
+          <audio id="player" controls></audio>
 
           <div class="divider"></div>
           <div class="row">
@@ -214,6 +205,7 @@
           <li>1–2 drills</li>
           <li>A practice prompt you can record</li>
           <li>Mark as complete when done</li>
+          <li>Coach audio (MP3) if uploaded</li>
         </ul>
       </div>
 
@@ -227,7 +219,8 @@
 
 <script>
 /* =========================
-   Data: Real lesson content + optional coach audio
+   Data: Real lesson content (+ audio files)
+   Audio file convention: "<lesson-id>.mp3" in repo root
 ========================= */
 const LESSONS = [
   {
@@ -235,7 +228,6 @@ const LESSONS = [
     title:"First Impression Hacks",
     time:"6 min",
     goal:"Sound warm, confident, and clear in the first 10 seconds.",
-    audioSrc:"./first-impression-hacks.mp3",   // ✅ you uploaded this (repo root)
     teach:[
       "Start with a clean greeting + name + purpose.",
       "Speak 10% slower than you think.",
@@ -255,7 +247,6 @@ const LESSONS = [
     title:"Build Trust With Your Voice",
     time:"8 min",
     goal:"Make people feel safe and confident listening to you.",
-    audioSrc:null,
     teach:[
       "Use a lower volume than “performance voice”.",
       "Pause for half a second before important points.",
@@ -275,7 +266,6 @@ const LESSONS = [
     title:"Confidence Wins",
     time:"7 min",
     goal:"Sound decisive without sounding rude.",
-    audioSrc:null,
     teach:[
       "Replace “I think” with “My view is…”",
       "Avoid rising tone at the end of statements.",
@@ -295,7 +285,6 @@ const LESSONS = [
     title:"Speak Up In Any Room",
     time:"9 min",
     goal:"Join conversations naturally and be heard.",
-    audioSrc:null,
     teach:[
       "Enter with a ‘bridge’ phrase: “Building on that…”",
       "Say one sentence first. Then expand if needed.",
@@ -315,7 +304,6 @@ const LESSONS = [
     title:"Storytelling Secrets",
     time:"10 min",
     goal:"Tell stories people remember.",
-    audioSrc:null,
     teach:[
       "Use 3 beats: Situation → Action → Result.",
       "Add one emotion word: “I was nervous / excited…”",
@@ -335,7 +323,6 @@ const LESSONS = [
     title:"Body Language (Voice Edition)",
     time:"7 min",
     goal:"Sound energetic and present (even on the phone).",
-    audioSrc:null,
     teach:[
       "Stand up for important calls.",
       "Gesture lightly while speaking (changes your tone).",
@@ -355,7 +342,6 @@ const LESSONS = [
     title:"Read People Like A Pro",
     time:"8 min",
     goal:"Sound socially aware and tuned-in.",
-    audioSrc:null,
     teach:[
       "Mirror keywords: repeat 1–2 words they used.",
       "Reflect emotion: “That sounds frustrating.”",
@@ -375,7 +361,6 @@ const LESSONS = [
     title:"Handle Difficult People",
     time:"10 min",
     goal:"Stay calm and firm under pressure.",
-    audioSrc:null,
     teach:[
       "Use: “I hear you.” then state boundary.",
       "Offer two options (reduces conflict).",
@@ -422,6 +407,15 @@ function computeDailySet(){
   return idxs.map(i => LESSONS[i].id);
 }
 
+function escapeHtml(s){
+  return (s||"").replace(/[&<>"']/g, c => ({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+  }[c]));
+}
+
+function lessonById(id){ return LESSONS.find(l => l.id === id); }
+function isDone(id){ return !!state.done[id]; }
+
 /* =========================
    UI render
 ========================= */
@@ -440,9 +434,6 @@ const kpiStreak = document.getElementById("kpiStreak");
 const kpiDone = document.getElementById("kpiDone");
 const kpiMinutes = document.getElementById("kpiMinutes");
 
-function lessonById(id){ return LESSONS.find(l => l.id === id); }
-function isDone(id){ return !!state.done[id]; }
-
 function updateKPIs(){
   const doneCount = Object.keys(state.done).length;
   kpiDone.textContent = doneCount;
@@ -451,6 +442,7 @@ function updateKPIs(){
 }
 
 function renderLessonLists(){
+  // Lessons list
   elLessonList.innerHTML = "";
   LESSONS.forEach(l=>{
     const li = document.createElement("li");
@@ -469,6 +461,7 @@ function renderLessonLists(){
     elLessonList.appendChild(li);
   });
 
+  // Daily list
   const daily = computeDailySet();
   elDailyList.innerHTML = "";
   daily.forEach(id=>{
@@ -489,10 +482,10 @@ function renderLessonLists(){
   updateKPIs();
 }
 
-function escapeHtml(s){
-  return (s||"").replace(/[&<>"']/g, c => ({
-    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
-  }[c]));
+function audioUrlForLesson(id){
+  // MP3s are stored in repo root next to index.html
+  // Example: first-impression-hacks.mp3
+  return `./${encodeURIComponent(id)}.mp3`;
 }
 
 function openLesson(id){
@@ -506,23 +499,17 @@ function openLesson(id){
   const teach = l.teach.map(t=>`<li>${escapeHtml(t)}</li>`).join("");
   const drills = l.drills.map(d=>`<li>${escapeHtml(d)}</li>`).join("");
 
-  const audioHtml = l.audioSrc ? `
-    <div class="coachAudioBox">
-      <div style="font-weight:800; margin-bottom:6px">Coach audio</div>
-      <div class="mini" style="margin-bottom:8px">Tap play — iPhone won’t autoplay.</div>
-      <audio id="coachPlayer" controls preload="none" style="width:100%">
-        <source src="${escapeHtml(l.audioSrc)}" type="audio/mpeg">
-      </audio>
-    </div>
-  ` : `
-    <div class="coachAudioBox">
-      <div style="font-weight:800; margin-bottom:6px">Coach audio</div>
-      <div class="mini">No coach audio added yet for this lesson.</div>
-    </div>
-  `;
+  const mp3 = audioUrlForLesson(id);
 
   elLessonBody.innerHTML = `
-    ${audioHtml}
+    <div class="prompt">
+      <div style="font-weight:800; margin-bottom:6px">Coach audio</div>
+      <div class="mini" style="margin-bottom:8px">Tap play — iPhone won’t autoplay.</div>
+      <audio controls preload="none" src="${mp3}"></audio>
+      <div class="mini" style="margin-top:8px">
+        If it spins forever, check the file exists: <span class="pill">${escapeHtml(id)}.mp3</span>
+      </div>
+    </div>
 
     <div class="prompt">
       <div style="font-weight:800; margin-bottom:6px">Teaching</div>
@@ -559,60 +546,20 @@ document.querySelectorAll(".tab").forEach(t=>{
 });
 
 /* =========================
-   iPhone-safe tap handler (ONE handler only)
-   - Tap lesson row: opens lesson
-   - Tap daily badge "Do today": opens + loads prompt + switches to practice
+   iPhone tap fix: click + touchend
 ========================= */
-function normalize(s){ return (s||"").trim().toLowerCase(); }
-
-function openAndScroll(id){
-  openLesson(id);
-  const details = document.querySelector("#lessonTitle") || document.querySelector("#lessonBody");
-  if(details) details.scrollIntoView({ behavior:"smooth", block:"start" });
-}
-
-function loadPromptFromLesson(id){
-  const l = lessonById(id);
-  if(!l) return;
-  practicePromptText.textContent = l.prompt.text;
-  practicePromptHint.textContent = l.prompt.hint || "";
-}
-
-function goPractice(){
-  const practiceTab = document.querySelector('.tab[data-tab="practice"]');
-  if(practiceTab) practiceTab.click();
-}
-
-function rowIdFromTarget(target){
+function lessonIdFromEventTarget(target){
   const row = target.closest("[data-lesson-id]");
   return row ? row.getAttribute("data-lesson-id") : null;
 }
-
-function unifiedHandler(e){
-  const id = rowIdFromTarget(e.target);
-  if(!id) return;
-
-  // Prevent weird iOS double triggers/scroll weirdness
-  e.preventDefault();
-
-  // Always open lesson when tapping a row
-  openAndScroll(id);
-
-  // If tap was on a badge within the DAILY list and says Do/Due today => load prompt + go practice
-  const inDaily = !!e.target.closest("#dailyList");
-  const badge = e.target.closest(".badge");
-  if(inDaily && badge){
-    const txt = normalize(badge.textContent);
-    if(txt.includes("do today") || txt.includes("due today")){
-      loadPromptFromLesson(id);
-      goPractice();
-    }
-  }
-}
-
-// Use both click + touchend for iPhone
-document.addEventListener("click", unifiedHandler, { passive:false });
-document.addEventListener("touchend", unifiedHandler, { passive:false });
+["click","touchend"].forEach(evt=>{
+  document.addEventListener(evt, (e)=>{
+    const id = lessonIdFromEventTarget(e.target);
+    if(!id) return;
+    e.preventDefault();
+    openLesson(id);
+  }, { passive:false });
+});
 
 /* =========================
    Completion + streak
@@ -744,10 +691,17 @@ btnSavePractice.addEventListener("click", ()=>{
   alert("Saved ✅");
 });
 
+function loadPromptFromLesson(id){
+  const l = lessonById(id);
+  if(!l) return;
+  practicePromptText.textContent = l.prompt.text;
+  practicePromptHint.textContent = l.prompt.hint || "";
+}
+
 btnLoadPrompt.addEventListener("click", ()=>{
   if(!currentLessonId) return;
   loadPromptFromLesson(currentLessonId);
-  goPractice();
+  document.querySelector('.tab[data-tab="practice"]').click();
 });
 
 document.getElementById("btnLoadDailyPrompt").addEventListener("click", ()=>{
@@ -761,7 +715,7 @@ document.getElementById("btnStartDaily").addEventListener("click", ()=>{
   const first = daily.find(id=>!isDone(id)) || daily[0];
   openLesson(first);
   loadPromptFromLesson(first);
-  goPractice();
+  document.querySelector('.tab[data-tab="practice"]').click();
 });
 
 /* =========================
@@ -797,9 +751,25 @@ function renderProgress(){
 renderLessonLists();
 updateKPIs();
 
-if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("./sw.js").catch(()=>{});
-}
+/* =========================
+   ✅ Service worker OFF (fixes endless MP3 loading)
+   Unregister any old SW + clear caches
+========================= */
+(async () => {
+  if (!("serviceWorker" in navigator)) return;
+
+  try {
+    const regs = await navigator.serviceWorker.getRegistrations();
+    for (const r of regs) await r.unregister();
+  } catch (_) {}
+
+  try {
+    if (window.caches) {
+      const keys = await caches.keys();
+      for (const k of keys) await caches.delete(k);
+    }
+  } catch (_) {}
+})();
 </script>
 </body>
 </html>
