@@ -1,7 +1,8 @@
 {
   "name": "IshySpeak",
   "short_name": "IshySpeak",
-  "start_url": "./index.html",
+  "start_url": "/ishyspeak/",
+  "scope": "/ishyspeak/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#111827"
